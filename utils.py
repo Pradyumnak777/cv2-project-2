@@ -46,16 +46,25 @@ def visualize_3d_points(pts, colors=None, inlier_indices=None):
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(pts)
     
-    #if no colmap colors are provided, use gray
     if colors is None:
         colors = np.ones_like(pts) * 0.8
     else:
-        #open3d needs colors between 0 and 1
         colors = colors.astype(np.float64) / 255.0
     
-    #color the inliers bright red so they stand out
+    geometries = [pcd]
+    
+    #color the inliers bright red and draw the plane boundary
     if inlier_indices is not None and len(inlier_indices) > 0:
         colors[inlier_indices] = [1.0, 0.0, 0.0]
         
+        #isolate the table points
+        inlier_cloud = pcd.select_by_index(inlier_indices)
+        
+        obb = inlier_cloud.get_oriented_bounding_box()
+        obb.color = (1.0, 0.0, 0.0)
+        geometries.append(obb)
+        
     pcd.colors = o3d.utility.Vector3dVector(colors)
-    o3d.visualization.draw_geometries([pcd])
+    
+    #draw both the points and the transparent plane boundary
+    o3d.visualization.draw_geometries(geometries)

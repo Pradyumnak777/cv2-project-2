@@ -42,7 +42,6 @@ if not os.path.exists(sparse_out):
 below code prevents from generating multiple sparse folders...reduction of feature matching thresh..
 '''
 
-# ADDED FLAGS HERE: Disable multiple models and lower the common point thresholds
 mapper_cmd = (
     f"colmap mapper "
     f"--database_path {db} "
@@ -57,7 +56,6 @@ os.system(mapper_cmd)
 if not os.path.exists(text_out):
     os.makedirs(text_out)
 
-# Now it will safely grab sparse_out/0 without worrying about a folder 1
 os.system(f"colmap model_converter --input_path {sparse_out}/0 --output_path {text_out} --output_type TXT")
 
 print("done. check the sparse_text folder for cameras.txt, images.txt and points3d.txt")

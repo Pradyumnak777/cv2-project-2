@@ -7,7 +7,9 @@ pts = all_data[:, :3]
 rgb = all_data[:, 3:]
 #run ransac for a few thousand iterations
 #threshold needs to be decided...will do trial n error..
-table_inliers = get_3D_plane(pts, 2000, 0.05)
+threshold = np.ptp(pts, axis=0).max() * 0.01
+# threshold = 0.05
+table_inliers = get_3D_plane(pts, 2000, threshold)
 
 #save the inlier indices so we can color them differently later
 np.save("inlier_indices.npy", table_inliers)

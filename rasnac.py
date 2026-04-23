@@ -1,14 +1,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from utils import visualize_3d_points
 
 # Assuming 'xyz_coordinates' is the (11353, 3) array from Step 3
 file_path = 'sparse_text/points3D.txt'
 
 # Read the file directly into a numpy array
 # comments='#' automatically ignores the COLMAP header lines
-# usecols=(1, 2, 3) isolates just the X, Y, and Z columns
-xyz_coordinates = np.loadtxt(file_path, comments='#', usecols=(1, 2, 3))
-pts = xyz_coordinates
+# usecols=(1, 2, 3, 4, 5, 6) isolates X, Y, Z and RGB columns
+all_data = np.loadtxt(file_path, comments='#', usecols=(1, 2, 3, 4, 5, 6))
+pts = all_data[:, :3]
+rgb = all_data[:, 3:]
 num_points = pts.shape[0]
 
 # RANSAC Hyperparameters
@@ -57,26 +59,9 @@ outliers = pts[~best_mask]
 best_normal = normals[best_plane_idx]
 best_d = d[best_plane_idx]
 
-# 6. Step 5: Display the 3D point cloud
-fig = plt.figure(figsize=(10, 8))
-ax = fig.add_subplot(111, projection='3d')
-
-# Plot outliers as tiny gray dots
-ax.scatter(outliers[:, 0], outliers[:, 1], outliers[:, 2], 
-           c='gray', s=1, alpha=0.5, label='Scene Structure (Outliers)')
-
-# Plot inliers (the dominant plane) as slightly larger red dots
-ax.scatter(inliers[:, 0], inliers[:, 1], inliers[:, 2], 
-           c='red', s=5, label='Dominant Plane (Inliers)')
-
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_zlabel('Z')
-ax.legend()
-plt.title(f'RANSAC Dominant Plane Detection (Inliers: {inliers.shape[0]})')
-
-# Display interactive plot 
-plt.show()
+# 6. Step 5: Display the 3D point cloud (Open3D)
+inlier_indices = np.where(best_mask)[0]
+visualize_3d_points(pts, colors=rgb, inlier_indices=inlier_indices)
 
 print(f"Total points: {num_points}")
 print(f"Dominant plane inliers: {inliers.shape[0]}")
