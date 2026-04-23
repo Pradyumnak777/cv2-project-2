@@ -4,27 +4,31 @@ import os
 I have an mp4 video, perform some preproc and use colmap to create point cloud
 '''
 
-# define the paths
+#define the paths
 video = "test_vid.mp4"
 img_folder = "images"
 db = "database.db"
 sparse_out = "sparse"
 text_out = "sparse_text"
 
-# extract frames every 10th frame because 30fps is too much data
+#extract frames every 10th frame because 30fps is too much data
 if not os.path.exists(img_folder):
     os.makedirs(img_folder)
 os.system(f"ffmpeg -i {video} -vf \"select='not(mod(n,10))'\" -vsync vfr {img_folder}/frame_%04d.jpg")
 
-# simple_radial and shared, as same camera used, with same focal length
+#simple_radial and shared, as same camera used, with same focal length
 os.system(f"colmap feature_extractor --database_path {db} --image_path {img_folder} --ImageReader.single_camera 1 --ImageReader.camera_model SIMPLE_RADIAL")
 
-# match the features between frames (sequential is great for video)
 os.system(f"colmap sequential_matcher --database_path {db}")
 
-# start the actual 3d reconstruction
+#start the actual 3d reconstruction
 if not os.path.exists(sparse_out):
     os.makedirs(sparse_out)
+    
+'''
+below code helps wiht getting a single unified spare point cloud instead of multiple...
+reduction of feature match requirements(?)
+'''    
 
 # ADDED FLAGS HERE: Disable multiple models and lower the common point thresholds
 mapper_cmd = (
@@ -38,7 +42,6 @@ mapper_cmd = (
 )
 os.system(mapper_cmd)
 
-# export everything to text files so to use them in python
 if not os.path.exists(text_out):
     os.makedirs(text_out)
 

@@ -41,20 +41,59 @@ def get_3D_plane(pts, iters, thresh):
     return best_inliers
 
 
-# def visualize_3d_points(pts, inlier_indices=None):
-#     fig = plt.figure()
-#     ax = fig.add_subplot(111, projection='3d')
+def visualize_3d_points(pts, inlier_indices=None):
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.set_proj_type('persp')
 
-#     ax.scatter(pts[:, 0], pts[:, 1], pts[:, 2], c='lightgray', s=1, label='outliers')
+    if inlier_indices is None or len(inlier_indices) == 0:
+        outlier_pts = pts
+    else:
+        outlier_mask = np.ones(len(pts), dtype=bool)
+        outlier_mask[inlier_indices] = False
+        outlier_pts = pts[outlier_mask]
 
-#     #if we found the plane, plot those points in a different color
-#     if inlier_indices is not None:
-#         inlier_pts = pts[inlier_indices]
-#         ax.scatter(inlier_pts[:, 0], inlier_pts[:, 1], inlier_pts[:, 2], c='red', s=2, label='dominant plane')
+    ax.scatter(
+        outlier_pts[:, 0],
+        outlier_pts[:, 1],
+        outlier_pts[:, 2],
+        c='lightgray',
+        s=1,
+        alpha=0.45,
+        label='outliers'
+    )
 
-#     ax.set_xlabel('x')
-#     ax.set_ylabel('y')
-#     ax.set_zlabel('z')
-#     ax.legend()
+    #if we found the plane, plot those points in a different color
+    if inlier_indices is not None:
+        inlier_pts = pts[inlier_indices]
+        ax.scatter(
+            inlier_pts[:, 0],
+            inlier_pts[:, 1],
+            inlier_pts[:, 2],
+            c='red',
+            s=3,
+            alpha=0.9,
+            label='dominant plane'
+        )
+
+    mins = np.min(pts, axis=0)
+    maxs = np.max(pts, axis=0)
+    centers = (mins + maxs) / 2.0
+    max_span = np.max(maxs - mins)
+    half = max_span / 2.0
+
+    ax.set_xlim(centers[0] - half, centers[0] + half)
+    ax.set_ylim(centers[1] - half, centers[1] + half)
+    ax.set_zlim(centers[2] - half, centers[2] + half)
+    ax.set_box_aspect([1, 1, 1])
+
+    #better default angle..
+    ax.view_init(elev=18, azim=-55)
+
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
+    ax.legend()
+    fig.tight_layout()
     
-#     plt.show()    
+    plt.show()    

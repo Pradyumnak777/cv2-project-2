@@ -12,4 +12,4 @@ table_inliers = get_3D_plane(points, 2000, 0.05)
 np.save("inlier_indices.npy", table_inliers)
 print(f"found {len(table_inliers)} inliers for the dominant plane")
 
-visualize_3d_points(points)
+visualize_3d_points(points, table_inliers)
