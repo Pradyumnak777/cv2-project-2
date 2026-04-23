@@ -1,4 +1,5 @@
 import os
+import shutil
 
 '''
 I have an mp4 video, perform some preproc and use colmap to create point cloud
@@ -14,7 +15,18 @@ text_out = "sparse_text"
 # extract frames every 10th frame because 30fps is too much data
 if not os.path.exists(img_folder):
     os.makedirs(img_folder)
-os.system(f"ffmpeg -i {video} -vf \"select='not(mod(n,10))'\" -vsync vfr {img_folder}/frame_%04d.jpg")
+
+#remove old. KEEP IMAGE FOLDER!!!!!
+if os.path.exists(db):
+    os.remove(db)
+if os.path.exists(sparse_out):
+    shutil.rmtree(sparse_out)
+if os.path.exists(text_out):
+    shutil.rmtree(text_out)
+'''
+#NOTE: uncomment below if running straight from video!!
+'''
+# os.system(f"ffmpeg -i {video} -vf \"select='not(mod(n,10))'\" -vsync vfr {img_folder}/frame_%04d.jpg")
 
 # simple_radial and shared, as same camera used, with same focal length
 os.system(f"colmap feature_extractor --database_path {db} --image_path {img_folder} --ImageReader.single_camera 1 --ImageReader.camera_model SIMPLE_RADIAL")
@@ -25,6 +37,10 @@ os.system(f"colmap sequential_matcher --database_path {db}")
 # start the actual 3d reconstruction
 if not os.path.exists(sparse_out):
     os.makedirs(sparse_out)
+
+'''
+below code prevents from generating multiple sparse folders...reduction of feature matching thresh..
+'''
 
 # ADDED FLAGS HERE: Disable multiple models and lower the common point thresholds
 mapper_cmd = (
@@ -38,7 +54,6 @@ mapper_cmd = (
 )
 os.system(mapper_cmd)
 
-# export everything to text files so to use them in python
 if not os.path.exists(text_out):
     os.makedirs(text_out)
 
