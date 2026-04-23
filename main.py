@@ -1,5 +1,5 @@
 import numpy as np
-from utils import get_3D_plane, visualize_3d_points, project_3d_to_2d
+from utils import get_3D_plane, visualize_3d_points, project_3d_to_2d, frames_folder_to_mp4_ffmpeg
 from scipy.spatial.transform import Rotation
 import cv2
 import os
@@ -164,3 +164,5 @@ for i in range(len(image_ids)):
     cv2.imwrite(os.path.join(output_folder, img_name), frame)
 
 print("AR rendering complete! check the 'ar_output' folder.")
+
+frames_folder_to_mp4_ffmpeg(frames_dir="ar_output", output_mp4="ar_output.mp4", frame_glob="*.jpg")

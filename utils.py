@@ -1,9 +1,11 @@
 import numpy as np
 import random
+import subprocess
+from pathlib import Path
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import open3d as o3d
-
+import os
 '''
 after getting the points3D.txt, write the RANSAC routine..
 '''
@@ -102,3 +104,10 @@ def project_3d_to_2d(pts_3d, R, t, K):
     
     pixels = np.column_stack((u, v))
     return pixels, pts_cam[:, 2]
+
+
+def frames_folder_to_mp4_ffmpeg(frames_dir, output_mp4="output.mp4", fps=30, frame_glob="*.png"):
+    input_pattern = str(Path(frames_dir) / frame_glob)
+    cmd = f'ffmpeg -y -framerate {fps} -pattern_type glob -i "{input_pattern}" -c:v libx264 -pix_fmt yuv420p "{output_mp4}"'
+    os.system(cmd)
+    return output_mp4
