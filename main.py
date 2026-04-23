@@ -3,6 +3,11 @@ from utils import get_3D_plane, visualize_3d_points, project_3d_to_2d, frames_fo
 from scipy.spatial.transform import Rotation
 import cv2
 import os
+import random
+
+SEED = 42
+random.seed(SEED)
+np.random.seed(SEED)
 
 #load the points from the colmap text file
 all_data = np.loadtxt("sparse_text/points3D.txt", usecols=(1, 2, 3, 4, 5, 6), comments="#")
@@ -115,10 +120,13 @@ K = np.array([
 output_folder = "ar_output"
 if not os.path.exists(output_folder):
     os.makedirs(output_folder)
+
+for file_name in os.listdir(output_folder):
+    if file_name.lower().endswith((".jpg", ".jpeg", ".png")):
+        os.remove(os.path.join(output_folder, file_name))
     
 image_names = [line.split()[-1] for line in pose_lines]
 
-np.random.seed(42)
 face_colors = np.random.randint(50, 255, size=(len(faces), 3)).tolist()
 
 for i in range(len(image_ids)):
@@ -161,8 +169,9 @@ for i in range(len(image_ids)):
         #black border
         cv2.drawContours(frame, [triangle_cnt], 0, (0,0,0), 2)
         
-    cv2.imwrite(os.path.join(output_folder, img_name), frame)
+    frame_name = f"frame_{i:04d}.jpg"
+    cv2.imwrite(os.path.join(output_folder, frame_name), frame)
 
 print("AR rendering complete! check the 'ar_output' folder.")
 
-frames_folder_to_mp4_ffmpeg(frames_dir="ar_output", output_mp4="ar_output.mp4", frame_glob="*.jpg")
+frames_folder_to_mp4_ffmpeg(frames_dir="ar_output", output_mp4="ar_output.mp4", frame_glob="*.jpg", fps=18)
