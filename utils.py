@@ -2,6 +2,7 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import open3d as o3d
 
 '''
 after getting the points3D.txt, write the RANSAC routine..
@@ -41,20 +42,20 @@ def get_3D_plane(pts, iters, thresh):
     return best_inliers
 
 
-# def visualize_3d_points(pts, inlier_indices=None):
-#     fig = plt.figure()
-#     ax = fig.add_subplot(111, projection='3d')
-
-#     ax.scatter(pts[:, 0], pts[:, 1], pts[:, 2], c='lightgray', s=1, label='outliers')
-
-#     #if we found the plane, plot those points in a different color
-#     if inlier_indices is not None:
-#         inlier_pts = pts[inlier_indices]
-#         ax.scatter(inlier_pts[:, 0], inlier_pts[:, 1], inlier_pts[:, 2], c='red', s=2, label='dominant plane')
-
-#     ax.set_xlabel('x')
-#     ax.set_ylabel('y')
-#     ax.set_zlabel('z')
-#     ax.legend()
+def visualize_3d_points(pts, colors=None, inlier_indices=None):
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(pts)
     
-#     plt.show()    
+    #if no colmap colors are provided, use gray
+    if colors is None:
+        colors = np.ones_like(pts) * 0.8
+    else:
+        #open3d needs colors between 0 and 1
+        colors = colors.astype(np.float64) / 255.0
+    
+    #color the inliers bright red so they stand out
+    if inlier_indices is not None and len(inlier_indices) > 0:
+        colors[inlier_indices] = [1.0, 0.0, 0.0]
+        
+    pcd.colors = o3d.utility.Vector3dVector(colors)
+    o3d.visualization.draw_geometries([pcd])
