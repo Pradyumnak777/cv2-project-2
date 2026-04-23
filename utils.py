@@ -10,6 +10,7 @@ after getting the points3D.txt, write the RANSAC routine..
 
 def get_3D_plane(pts, iters, thresh):
     best_inliers = []
+    best_normal = None #selected plane's normal(?)
     
     for i in range(iters):
         #randomly sample 3 points to define a plane
@@ -38,18 +39,20 @@ def get_3D_plane(pts, iters, thresh):
         #keep the biggest group found so far
         if len(current_inliers) > len(best_inliers):
             best_inliers = current_inliers
+            best_normal = normal
             
-    return best_inliers
+    return best_inliers, best_normal
 
 
-def visualize_3d_points(pts, colors=None, inlier_indices=None):
+def visualize_3d_points(pts, colors=None, inlier_indices=None, mesh_vertices=None, mesh_faces=None):
+    pts = np.asarray(pts, dtype=np.float64)
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(pts)
     
     if colors is None:
         colors = np.ones_like(pts) * 0.8
     else:
-        colors = colors.astype(np.float64) / 255.0
+        colors = np.asarray(colors, dtype=np.float64) / 255.0
     
     geometries = [pcd]
     
@@ -66,5 +69,24 @@ def visualize_3d_points(pts, colors=None, inlier_indices=None):
         
     pcd.colors = o3d.utility.Vector3dVector(colors)
     
+    if mesh_vertices is not None and mesh_faces is not None:
+        mesh_vertices = np.asarray(mesh_vertices, dtype=np.float64)
+        mesh_faces = np.asarray(mesh_faces, dtype=np.int32)
+
+        mesh = o3d.geometry.TriangleMesh()
+        mesh.vertices = o3d.utility.Vector3dVector(mesh_vertices)
+        mesh.triangles = o3d.utility.Vector3iVector(mesh_faces)
+        
+        #green hedron
+        mesh.paint_uniform_color([0.0, 1.0, 0.0]) 
+        mesh.compute_vertex_normals() #some lighting
+        
+        wireframe = o3d.geometry.LineSet.create_from_triangle_mesh(mesh)
+        wireframe.paint_uniform_color([0.0, 0.0, 0.0])
+        
+        geometries.append(mesh)
+        geometries.append(wireframe)
+    
     #draw both the points and the transparent plane boundary
     o3d.visualization.draw_geometries(geometries)
+    
