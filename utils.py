@@ -90,3 +90,15 @@ def visualize_3d_points(pts, colors=None, inlier_indices=None, mesh_vertices=Non
     #draw both the points and the transparent plane boundary
     o3d.visualization.draw_geometries(geometries)
     
+def project_3d_to_2d(pts_3d, R, t, K):
+    pts_cam = (R @ pts_3d.T).T + t
+    
+    #perspective div..
+    x_prime = pts_cam[:, 0] / pts_cam[:, 2]
+    y_prime = pts_cam[:, 1] / pts_cam[:, 2]
+    
+    u = K[0, 0] * x_prime + K[0, 2]
+    v = K[1, 1] * y_prime + K[1, 2]
+    
+    pixels = np.column_stack((u, v))
+    return pixels, pts_cam[:, 2]
