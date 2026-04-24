@@ -172,6 +172,7 @@ for i in range(len(image_ids)):
     frame_name = f"frame_{i:04d}.jpg"
     cv2.imwrite(os.path.join(output_folder, frame_name), frame)
 
-print("AR rendering complete! check the 'ar_output' folder.")
 
 frames_folder_to_mp4_ffmpeg(frames_dir="ar_output", output_mp4="ar_output.mp4", frame_glob="*.jpg", fps=18)
+
+print("AR rendering complete! check the 'ar_output' folder.")
